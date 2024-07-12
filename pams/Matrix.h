@@ -1,29 +1,23 @@
 #pragma once
 
-#include <vector>
-#include <istream>
+#include <iomanip>
 #include <iostream>
+#include <istream>
+#include <span>
 #include <sstream>
 #include <string>
-#include <iomanip>
-#include <span>
+#include <vector>
 
-class Matrix
-{
+class Matrix {
+ public:
+  Matrix(std::istream& stream);
 
-public:
+  void PrintMat();
 
-	Matrix(std::istream& stream);
+  std::span<const double> operator[](size_t row) const;
+  size_t size() const;
 
-	void PrintMat();
-
-	std::span<const double> operator[](size_t row) const;
-
-private:
-
-	std::vector<double> data;
-	size_t size;
-
-
+ private:
+  std::vector<double> _data;
+  size_t _size;
 };
-
