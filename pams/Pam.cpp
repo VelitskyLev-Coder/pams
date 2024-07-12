@@ -27,18 +27,18 @@ std::vector<size_t> initializeMedoids(size_t max_num, size_t k, size_t seed) {
 void assignPointsToMedoids(const Matrix& distanceMatrix,
                            const std::vector<size_t>& medoids,
                            std::vector<size_t>& oAssignedPoints) {
-  oAssignedPoints.clear();
-  for (size_t i = 0; i < distanceMatrix.size(); i++) {
-    double minDistance = std::numeric_limits<double>::max();
-    size_t bestMedoid = 0;
-    for (size_t medoidIndex : medoids) {
-      double curDistance = distanceMatrix[i][medoidIndex];
-      if (curDistance < minDistance) {
-        minDistance = curDistance;
-        bestMedoid = medoidIndex;
+  size_t numPoints = distanceMatrix.size();
+  oAssignedPoints.resize(numPoints);  
+
+  std::fill(oAssignedPoints.begin(), oAssignedPoints.end(), medoids[0]);
+
+  for (size_t medoidIndex : medoids) {
+    for (size_t i = 0; i < numPoints; i++) {
+      double curDistance = distanceMatrix[medoidIndex][i];
+      if (curDistance < distanceMatrix[oAssignedPoints[i]][i]) {
+        oAssignedPoints[i] = medoidIndex;
       }
     }
-    oAssignedPoints.push_back(bestMedoid);
   }
 }
 
