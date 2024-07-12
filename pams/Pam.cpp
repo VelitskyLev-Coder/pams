@@ -54,6 +54,8 @@ double computeTotalCost(const Matrix& distanceMatrix,
 std::vector<std::vector<size_t>> pam(const Matrix& distanceMatrix, int k) {
   std::vector<size_t> medoids = initializeMedoids(distanceMatrix.size(), k);
   std::vector<size_t> clusters(distanceMatrix.size());
+  std::vector<size_t> newClusters;
+  std::vector<size_t> newMedoids;
   assignPointsToMedoids(distanceMatrix, medoids, clusters);
   double curCost = computeTotalCost(distanceMatrix, clusters);
 
@@ -70,9 +72,8 @@ std::vector<std::vector<size_t>> pam(const Matrix& distanceMatrix, int k) {
           continue;  // Point is already a medoid
         }
 
-        std::vector<size_t> newMedoids = medoids;
+        newMedoids = medoids;
         newMedoids[medoidIndex] = pointIndex;  // Try swapping medoids
-        std::vector<size_t> newClusters(distanceMatrix.size());
         assignPointsToMedoids(distanceMatrix, newMedoids, newClusters);
         double newCost = computeTotalCost(distanceMatrix, newClusters);
 
