@@ -2,6 +2,7 @@
 #include <numeric>
 #include <iostream>
 #include <cmath>
+#include <execution>
 
 
 #include "MD.h"
@@ -9,11 +10,22 @@
 
 std::vector<std::vector<size_t>> createPamClusters(const Matrix& distMatrix, int minK, int maxK)
 {
+  std::vector<int> possibleK;
+  for (int i = minK; i <= maxK; i++) {
+    possibleK.push_back(i);
+  }
+
+  std::vector<PamResult> pamResults;
+  pamResults.resize(maxK - minK + 1);
+
+  auto result = std::transform(std::execution::par, possibleK.begin(), possibleK.end(), pamResults.begin(), [&distMatrix](int k) {return pam(distMatrix, k); });
+
+
 	std::vector<std::vector<size_t>> resultClusters;
 	double bestSilhouetteValue = -1.0;
 
 	for (int i = minK; i <= maxK; i++) {
-		auto [clusers, medoids] = pam(distMatrix, i);
+		auto [clusers, medoids] = pamResults[i-minK];
 		double curSilhouetteValue = calcSilhouette(distMatrix, clusers, medoids);
     std::cout << curSilhouetteValue << "\n";
 		if (curSilhouetteValue > bestSilhouetteValue) {
