@@ -6,8 +6,8 @@
 
 int main() {
   // std::ifstream file("..\\distance_matrix.csv");
-  std::ifstream file("..\\distance_matrix2.csv");
-  // std::ifstream file("..\\dist_matrix(10000x10000).txt");
+  // std::ifstream file("..\\distance_matrix2.csv");
+  std::ifstream file("..\\dist_matrix(10000x10000).txt");
   if (!file.is_open()) {
     std::cerr << "Unable to open file\n";
     return 0;
