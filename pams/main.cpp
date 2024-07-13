@@ -1,13 +1,13 @@
 #include <fstream>
 
 #include "Matrix.h"
-#include "Pam.h"
+#include "MD.h"
 #include <chrono>
 
 
 int main() {
-  //std::ifstream file("..\\distance_matrix.csv");
-  std::ifstream file("..\\distance_matrix2.csv");
+  std::ifstream file("..\\distance_matrix.csv");
+  //std::ifstream file("..\\distance_matrix2.csv");
   //std::ifstream file("..\\dist_matrix(10000x10000).txt");
   if (!file.is_open()) {
     std::cerr << "Unable to open file\n";
@@ -16,12 +16,12 @@ int main() {
   Matrix matrix(file);
 
   // matrix.PrintMat();
-  PamResult pamResult;
+  std::vector<std::vector<size_t>> clusters;
 
   {
     std::chrono::time_point<std::chrono::steady_clock> start, end;
     start = std::chrono::high_resolution_clock::now();
-    pamResult = pam(matrix, 10);
+    clusters = createPamClusters(matrix);
     end = std::chrono::high_resolution_clock::now();
     std::cout << "\n\nElapsed time:\t "
               << ((std::chrono::duration<double>)(end - start)).count()
@@ -29,7 +29,7 @@ int main() {
   }
   std::cout << "clusters = {\n";
   int cluster_id = 0;
-  for (auto& vec : pamResult.clusters) {
+  for (auto& vec : clusters) {
     std::cout << "    " << cluster_id << ": [";
     for (size_t i = 0; i < vec.size(); ++i) {
       std::cout << vec[i];
