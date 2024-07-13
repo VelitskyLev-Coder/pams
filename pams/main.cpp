@@ -39,6 +39,6 @@ int main() {
     ++cluster_id;
   }
   std::cout << "}\n";
-
+  std::cout << "Number of Clusters: " << clusters.size() << std::endl;
   return 0;
 }
