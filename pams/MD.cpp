@@ -1,15 +1,15 @@
-#include <limits>
-#include <numeric>
-#include <iostream>
+#include "MD.h"
+
 #include <cmath>
 #include <execution>
+#include <iostream>
+#include <limits>
+#include <numeric>
 
-
-#include "MD.h"
 #include "Pam.h"
 
-std::vector<std::vector<size_t>> createPamClusters(const Matrix& distMatrix, int minK, int maxK)
-{
+std::vector<std::vector<size_t>> createPamClusters(const Matrix& distMatrix,
+                                                   int minK, int maxK) {
   std::vector<int> possibleK;
   for (int i = minK; i <= maxK; i++) {
     possibleK.push_back(i);
@@ -18,31 +18,35 @@ std::vector<std::vector<size_t>> createPamClusters(const Matrix& distMatrix, int
   std::vector<PamResult> pamResults;
   pamResults.resize(maxK - minK + 1);
 
-  auto result = std::transform(std::execution::par, possibleK.begin(), possibleK.end(), pamResults.begin(), [&distMatrix](int k) {return pam(distMatrix, k); });
+  std::transform(std::execution::par, possibleK.begin(), possibleK.end(),
+                 pamResults.begin(),
+                 [&distMatrix](int k) { return pam(distMatrix, k); });
 
+  std::vector<std::vector<size_t>> resultClusters;
+  double bestSilhouetteValue = -1.0;
 
-	std::vector<std::vector<size_t>> resultClusters;
-	double bestSilhouetteValue = -1.0;
-
-	for (int i = minK; i <= maxK; i++) {
-		auto [clusers, medoids] = pamResults[i-minK];
-		double curSilhouetteValue = calcSilhouette(distMatrix, clusers, medoids);
+  for (int i = minK; i <= maxK; i++) {
+    auto [clusers, medoids] = pamResults[i - minK];
+    double curSilhouetteValue = calcSilhouette(distMatrix, clusers, medoids);
     std::cout << curSilhouetteValue << "\n";
-		if (curSilhouetteValue > bestSilhouetteValue) {
-			bestSilhouetteValue = curSilhouetteValue;
-			resultClusters = clusers;
-		}
-	}
-	return resultClusters;
+    if (curSilhouetteValue > bestSilhouetteValue) {
+      bestSilhouetteValue = curSilhouetteValue;
+      resultClusters = clusers;
+    }
+  }
+  return resultClusters;
 }
 
-double calcSilhouette(const Matrix& distMatrix, const std::vector<std::vector<size_t>>& clusters, const std::vector<size_t>& medoids)
-{
+double calcSilhouette(const Matrix& distMatrix,
+                      const std::vector<std::vector<size_t>>& clusters,
+                      const std::vector<size_t>& medoids) {
   std::vector<double> silhouetteScores;
 
-  for (size_t clusterIndex = 0; clusterIndex < clusters.size(); ++clusterIndex) {
+  for (size_t clusterIndex = 0; clusterIndex < clusters.size();
+       ++clusterIndex) {
     for (size_t i : clusters[clusterIndex]) {
-      // Calculate a'(i) as the average distance from point i to all other points in its own cluster
+      // Calculate a'(i) as the average distance from point i to all other
+      // points in its own cluster
       double a_prime = 0.0;
       for (size_t j : clusters[clusterIndex]) {
         if (i != j) {
@@ -53,9 +57,11 @@ double calcSilhouette(const Matrix& distMatrix, const std::vector<std::vector<si
         a_prime /= (clusters[clusterIndex].size() - 1);
       }
 
-      // Calculate b'(i) as the minimum average distance from point i to points in the nearest different cluster
+      // Calculate b'(i) as the minimum average distance from point i to points
+      // in the nearest different cluster
       double b_prime = std::numeric_limits<double>::max();
-      for (size_t otherClusterIndex = 0; otherClusterIndex < clusters.size(); ++otherClusterIndex) {
+      for (size_t otherClusterIndex = 0; otherClusterIndex < clusters.size();
+           ++otherClusterIndex) {
         if (otherClusterIndex != clusterIndex) {
           double avgDistanceToOtherCluster = 0.0;
           for (size_t j : clusters[otherClusterIndex]) {
@@ -75,6 +81,9 @@ double calcSilhouette(const Matrix& distMatrix, const std::vector<std::vector<si
   }
 
   // Calculate the overall simplified silhouette score
-  double overallSilhouetteScore = std::accumulate(silhouetteScores.begin(), silhouetteScores.end(), 0.0) / silhouetteScores.size();
+  double overallSilhouetteScore =
+      std::reduce(silhouetteScores.begin(), silhouetteScores.end(),
+                  double(0.0)) /
+      silhouetteScores.size();
   return overallSilhouetteScore;
 }
