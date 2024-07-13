@@ -16,12 +16,12 @@ int main() {
   Matrix matrix(file);
 
   // matrix.PrintMat();
-  std::vector<std::vector<size_t>> clusters;
+  PamResult pamResult;
 
   {
     std::chrono::time_point<std::chrono::steady_clock> start, end;
     start = std::chrono::high_resolution_clock::now();
-    clusters = pam(matrix, 10);
+    pamResult = pam(matrix, 10);
     end = std::chrono::high_resolution_clock::now();
     std::cout << "\n\nElapsed time:\t "
               << ((std::chrono::duration<double>)(end - start)).count()
@@ -29,7 +29,7 @@ int main() {
   }
   std::cout << "clusters = {\n";
   int cluster_id = 0;
-  for (auto& vec : clusters) {
+  for (auto& vec : pamResult.clusters) {
     std::cout << "    " << cluster_id << ": [";
     for (size_t i = 0; i < vec.size(); ++i) {
       std::cout << vec[i];

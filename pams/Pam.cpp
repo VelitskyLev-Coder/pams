@@ -1,8 +1,8 @@
-#include "Pam.h"
-
 #include <random>
 #include <unordered_set>
 #include <unordered_map>
+
+#include "Pam.h"
 
 std::vector<size_t> initializeMedoids(size_t max_num, size_t k, size_t seed) {
   {
@@ -43,7 +43,7 @@ void assignPointsToMedoids(const Matrix& distanceMatrix,
 }
 
 double computeTotalCost(const Matrix& distanceMatrix,
-                        std::vector<size_t>& clusters) {
+                        const std::vector<size_t>& clusters) {
   double result = 0;
   for (int i = 0; i < clusters.size(); i++) {
     result += distanceMatrix[clusters[i]][i];
@@ -51,17 +51,19 @@ double computeTotalCost(const Matrix& distanceMatrix,
   return result;
 }
 
-std::vector<std::vector<size_t>> pam(const Matrix& distanceMatrix, int k) {
+
+PamResult pam(const Matrix& distanceMatrix,const int k) {
   std::vector<size_t> medoids = initializeMedoids(distanceMatrix.size(), k);
   std::vector<size_t> clusters(distanceMatrix.size());
   std::vector<size_t> newClusters;
   std::vector<size_t> newMedoids;
+  std::vector<size_t> bestMedoids;
   assignPointsToMedoids(distanceMatrix, medoids, clusters);
   double curCost = computeTotalCost(distanceMatrix, clusters);
 
   while (true) {
     bool improved = false;
-    std::vector<size_t> bestMedoids = medoids;
+    bestMedoids = medoids;
     std::cout << "Iter!"
               << " " << curCost << '\n';
     for (size_t medoidIndex = 0; medoidIndex < medoids.size(); ++medoidIndex) {
@@ -97,11 +99,11 @@ std::vector<std::vector<size_t>> pam(const Matrix& distanceMatrix, int k) {
   for (size_t i = 0; i < clusters.size(); ++i) {
     resultMap[clusters[i]].push_back(i);
   }
-
-  std::vector<std::vector<size_t>> result;
+    std::vector<std::vector<size_t>> result;
   for (auto& [_, points] : resultMap) {
-    result.emplace_back(std::move(points));
+    result.emplace_back(std::move(points)); //Casting to Right value
   }
 
-  return result;
+  return { result, medoids};
 }
+

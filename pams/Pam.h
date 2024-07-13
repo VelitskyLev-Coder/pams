@@ -14,4 +14,9 @@ void assignPointsToMedoids(const Matrix& distanceMatrix,
 double computeTotalCost(const Matrix& distanceMatrix,
                         std::vector<size_t>& oAssignedPoints);
 
-std::vector<std::vector<size_t>> pam(const Matrix& distanceMatrix, int k);
+struct PamResult {
+  std::vector<std::vector<size_t>> clusters;
+  std::vector<size_t> medoids;
+};
+
+PamResult pam(const Matrix& distanceMatrix, int k);
