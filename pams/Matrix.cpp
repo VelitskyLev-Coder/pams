@@ -1,7 +1,7 @@
-
 #include "matrix.h"
 
 #include <cmath>
+#include <fstream>
 
 Matrix::Matrix(std::istream& stream) {
   const size_t buffer_size = 1024 * 1024 * 10;
@@ -22,6 +22,33 @@ Matrix::Matrix(std::istream& stream) {
 
   // Calculate the matrix size only once
   _size = std::sqrt(_data.size());
+}
+
+Matrix::Matrix(const std::string& binaryFile) {
+  std::ifstream inputFile(binaryFile, std::ios::binary);
+  if (!inputFile) {
+    throw std::runtime_error("Cannot open file");
+  }
+
+  inputFile.read(reinterpret_cast<char*>(&_size), sizeof(_size));
+  _data.resize(_size * _size);
+  inputFile.read(reinterpret_cast<char*>(_data.data()),
+                 _data.size() * sizeof(double));
+
+  inputFile.close();
+}
+
+void Matrix::DumpBinary(const std::string& binaryFile) const {
+  std::ofstream outputFile(binaryFile, std::ios::binary);
+  if (!outputFile) {
+    throw std::runtime_error("Cannot open file");
+  }
+
+  outputFile.write(reinterpret_cast<const char*>(&_size), sizeof(_size));
+  outputFile.write(reinterpret_cast<const char*>(_data.data()),
+                   _data.size() * sizeof(double));
+
+  outputFile.close();
 }
 
 void Matrix::PrintMat() {

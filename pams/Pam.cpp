@@ -4,6 +4,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
+
+const double PROCEED_WITH_ITERATION_PROBABILITY = 0.01;
+
 std::vector<size_t> initializeMedoids(size_t max_num, size_t k, size_t seed) {
   {
     std::vector<size_t> result;
@@ -51,6 +54,31 @@ double computeTotalCost(const Matrix& distanceMatrix,
   return result;
 }
 
+size_t getbestMedoidIndexAtCluster(const Matrix& distanceMatrix,
+                                   const std::vector<size_t>& clusters,
+                                   size_t clusterMedoidIndex){
+  size_t resultBestMedoid = clusterMedoidIndex;
+  double minDistanceSum = std::numeric_limits<double>::max();
+  for (size_t pointIndex = 0; pointIndex < clusters.size(); pointIndex++) {
+    if (clusters[pointIndex] != clusterMedoidIndex) {
+      continue;
+    }
+    double curDistanceSum = 0;
+    for (int i = 0; i < clusters.size(); i++) {
+      if (clusters[i] == clusterMedoidIndex) {
+        curDistanceSum += distanceMatrix[pointIndex][i];
+      }
+    }
+    if (curDistanceSum < minDistanceSum) {
+      minDistanceSum = curDistanceSum;
+      resultBestMedoid = pointIndex;
+    }
+  }
+
+  return resultBestMedoid;
+
+}
+
 PamResult pam(const Matrix& distanceMatrix, const int k) {
   std::vector<size_t> medoids = initializeMedoids(distanceMatrix.size(), k);
   std::vector<size_t> clusters(distanceMatrix.size());
@@ -60,7 +88,7 @@ PamResult pam(const Matrix& distanceMatrix, const int k) {
   assignPointsToMedoids(distanceMatrix, medoids, clusters);
   double curCost = computeTotalCost(distanceMatrix, clusters);
 
-  while (true) {
+   while (true) {
     bool improved = false;
     bestMedoids = medoids;
     std::cout << "Iter!"
@@ -71,6 +99,21 @@ PamResult pam(const Matrix& distanceMatrix, const int k) {
         if (std::find(medoids.begin(), medoids.end(), pointIndex) !=
             medoids.end()) {
           continue;  // Point is already a medoid
+        }
+
+         // Create a random number generator
+        std::random_device rd;  // Seed with a real random value, if available
+        std::mt19937 gen(
+            rd());  // Standard mersenne_twister_engine seeded with rd()
+
+        // Create a uniform distribution between 0 and 1
+        std::uniform_real_distribution<> dis(0, 1);
+
+        // Generate and output a random double
+        double randomValue = dis(gen);
+
+        if (randomValue > PROCEED_WITH_ITERATION_PROBABILITY) {
+          continue;
         }
 
         newMedoids = medoids;
@@ -92,8 +135,33 @@ PamResult pam(const Matrix& distanceMatrix, const int k) {
     }
 
     medoids = bestMedoids;  // Update medoids to the best found
-  }
 
+
+    while (true) {
+      bool improved = false;
+
+      for (size_t i = 0; i < medoids.size(); i++) {
+        size_t bestNewMedoidIndexInCurrentCluster =
+            getbestMedoidIndexAtCluster(distanceMatrix, clusters, medoids[i]);
+        if (bestNewMedoidIndexInCurrentCluster != medoids[i]) {
+          improved = true;
+          medoids[i] = bestNewMedoidIndexInCurrentCluster;
+        }
+      }
+
+      if (!improved) {
+        break;  // Exit if no improvement
+      }
+
+      assignPointsToMedoids(distanceMatrix, medoids, clusters);
+      std::cout << "CurCost:" << computeTotalCost(distanceMatrix, clusters)
+                << std::endl;
+      curCost = computeTotalCost(distanceMatrix, clusters);
+    }
+
+    
+  }
+  
   std::unordered_map<size_t, std::vector<size_t>> resultMap;
   for (size_t i = 0; i < clusters.size(); ++i) {
     resultMap[clusters[i]].push_back(i);

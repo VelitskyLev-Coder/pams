@@ -6,21 +6,22 @@
 
 int main() {
   // std::ifstream file("..\\distance_matrix.csv");
-  // std::ifstream file("..\\distance_matrix2.csv");
+  //std::ifstream file("..\\distance_matrix2.csv");
   std::ifstream file("..\\dist_matrix(10000x10000).txt");
   if (!file.is_open()) {
     std::cerr << "Unable to open file\n";
     return 0;
   }
-  Matrix matrix(file);
-
+  Matrix matrix("C:\\Users\\velit\\source\\repos\\pams\\pams\\matrix.bin");
+  //Matrix matrix(file);
+  //matrix.DumpBinary("C:\\Users\\velit\\source\\repos\\pams\\pams\\matrix.bin");
   // matrix.PrintMat();
   std::vector<std::vector<size_t>> clusters;
 
   {
     std::chrono::time_point<std::chrono::steady_clock> start, end;
     start = std::chrono::high_resolution_clock::now();
-    clusters = createPamClusters(matrix);
+    clusters = createPamClusters(matrix, 2, 16);
     end = std::chrono::high_resolution_clock::now();
     std::cout << "\n\nElapsed time:\t "
               << ((std::chrono::duration<double>)(end - start)).count()

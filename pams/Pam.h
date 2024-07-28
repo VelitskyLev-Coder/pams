@@ -18,4 +18,8 @@ void assignPointsToMedoids(const Matrix& distanceMatrix,
 double computeTotalCost(const Matrix& distanceMatrix,
                         const std::vector<size_t>& oAssignedPoints);
 
+size_t getbestMedoidIndexAtCluster(const Matrix& distanceMatrix,
+                                   const std::vector<size_t>& clusters,
+                                   size_t clusterMedoidIndex);
+
 PamResult pam(const Matrix& distanceMatrix, int k);
