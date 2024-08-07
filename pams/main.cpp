@@ -1,7 +1,7 @@
 #include <chrono>
 #include <fstream>
 
-#include "MD.h"
+#include "Silhouette.h"
 #include "Matrix.h"
 
 int main() {
@@ -21,7 +21,7 @@ int main() {
   {
     std::chrono::time_point<std::chrono::steady_clock> start, end;
     start = std::chrono::high_resolution_clock::now();
-    clusters = createPamClusters(matrix, 2, 16);
+    clusters = createPamClusters(matrix);
     end = std::chrono::high_resolution_clock::now();
     std::cout << "\n\nElapsed time:\t "
               << ((std::chrono::duration<double>)(end - start)).count()

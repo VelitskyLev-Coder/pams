@@ -21,7 +21,7 @@
     <ClInclude Include="Pam.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MD.h">
+    <ClInclude Include="Silhouette.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ClCompile Include="Pam.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MD.cpp">
+    <ClCompile Include="Silhouette.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

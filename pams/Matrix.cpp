@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <fstream>
+#include <sstream>
 
 Matrix::Matrix(std::istream& stream) {
   const size_t buffer_size = 1024 * 1024 * 10;

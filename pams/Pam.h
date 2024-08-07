@@ -8,18 +8,20 @@ struct PamResult {
   std::vector<size_t> medoids;
 };
 
-std::vector<size_t> initializeMedoids(size_t max_num, size_t k,
-                                      size_t seed = 0);
+class PamBuilder {
+ public:
+  PamBuilder(const Matrix& distMatrix) : distanceMatrix(distMatrix) {}
+  PamResult pam(int k);
 
-void assignPointsToMedoids(const Matrix& distanceMatrix,
-                           const std::vector<size_t>& medoids,
-                           std::vector<size_t>& oAssignedPoints);
+ private:
+  void assignPointsToMedoids(const std::vector<size_t>& medoids,
+                             std::vector<size_t>& oAssignedPoints);
 
-double computeTotalCost(const Matrix& distanceMatrix,
-                        const std::vector<size_t>& oAssignedPoints);
+  size_t getbestMedoidIndexAtCluster(const std::vector<size_t>& clusters,
+                                     size_t clusterMedoidIndex);
+  std::vector<size_t> initializeMedoids(size_t k);
 
-size_t getbestMedoidIndexAtCluster(const Matrix& distanceMatrix,
-                                   const std::vector<size_t>& clusters,
-                                   size_t clusterMedoidIndex);
-
-PamResult pam(const Matrix& distanceMatrix, int k);
+  const Matrix& distanceMatrix;
+  std::vector<size_t> initializeMedoidResultCache;
+  std::vector<double> initializeMedoidMinDistanceCache;
+};
