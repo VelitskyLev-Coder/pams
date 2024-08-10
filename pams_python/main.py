@@ -13,7 +13,8 @@ def main():
     except IOError:
         print("Unable to open file")
         return
-
+    print("Parsing distance matrix is finished")
+    print("Start clustering")
     start_time = time.time()
     clusters = create_pam_clusters(dist_matrix)
     elapsed_time = time.time() - start_time

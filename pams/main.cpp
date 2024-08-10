@@ -12,8 +12,8 @@ int main() {
     std::cerr << "Unable to open file\n";
     return 0;
   }
-  Matrix matrix("C:\\Users\\velit\\source\\repos\\pams\\pams\\matrix.bin");
-  //Matrix matrix(file);
+  //Matrix matrix("C:\\Users\\velit\\source\\repos\\pams\\pams\\matrix.bin");
+  Matrix matrix(file);
   //matrix.DumpBinary("C:\\Users\\velit\\source\\repos\\pams\\pams\\matrix.bin");
   // matrix.PrintMat();
   std::vector<std::vector<size_t>> clusters;

@@ -4,16 +4,32 @@ from pam_builder import PamBuilder
 
 def calc_silhouette(dist_matrix, clusters):
     num_points = dist_matrix.shape[0]
-    silhouette_vals = np.zeros(num_points)
+    a_vals = np.zeros(num_points)
+    b_vals = np.full(num_points, np.inf)
+
+    point_indices = np.arange(num_points)
 
     for i, cluster in enumerate(clusters):
-        for point in cluster:
-            a = np.mean([dist_matrix[point, other] for other in cluster if other != point])
-            b = np.min(
-                [np.mean([dist_matrix[point, other] for other in clusters[j]]) for j in range(len(clusters)) if j != i])
-            silhouette_vals[point] = (b - a) / max(a, b)
+        in_cluster = np.isin(point_indices, cluster)
+        cluster_dist = dist_matrix[np.ix_(in_cluster, in_cluster)]
+        a_vals[in_cluster] = np.mean(np.ma.masked_where(cluster_dist == np.inf, cluster_dist), axis=1)
 
+        # Calculate b_i values by comparing to other clusters
+        for j, other_cluster in enumerate(clusters):
+            if i != j:
+                # Boolean mask for the points in the other cluster
+                other_in_cluster = np.isin(point_indices, other_cluster)
+                # Calculate mean distance from points in current cluster to points in other cluster
+                inter_cluster_dist = np.mean(dist_matrix[np.ix_(in_cluster, other_in_cluster)], axis=1)
+                # Update b_i values only if the calculated mean is lower than the current b_i
+                b_vals[in_cluster] = np.minimum(b_vals[in_cluster], inter_cluster_dist)
+
+    # Calculate the silhouette values
+    silhouette_vals = (b_vals - a_vals) / np.maximum(a_vals, b_vals)
+
+    # Calculate the overall mean silhouette score
     silhouette_score = np.mean(silhouette_vals)
+
     return silhouette_score
 
 

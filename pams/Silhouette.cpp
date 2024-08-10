@@ -55,6 +55,7 @@ std::vector<std::vector<size_t>> createPamClusters(const Matrix& distMatrix){
 }
 
 
+// Impelemtation acording to https://en.wikipedia.org/wiki/Silhouette_(clustering)
 double calcSilhouette(const Matrix& distMatrix,
                       const std::vector<std::vector<size_t>>& clusters,
                       const std::vector<size_t>& medoids) {

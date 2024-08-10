@@ -17,8 +17,10 @@ class PamBuilder:
         if not self.initialize_medoid_result_cache:
             first_medoid = np.argmin(self.distance_matrix.sum(axis=1))
             self.initialize_medoid_result_cache.append(first_medoid)
-            remaining_points.remove(first_medoid)
             self.initialize_medoid_min_distance_cache = self.distance_matrix[first_medoid].copy()
+
+        for point in self.initialize_medoid_result_cache:
+            remaining_points.remove(point)
 
         while len(self.initialize_medoid_result_cache) < k:
             gains = np.zeros(num_points)
@@ -32,16 +34,12 @@ class PamBuilder:
         return self.initialize_medoid_result_cache[:k]
 
     def assign_points_to_medoids(self, medoids):
-        num_points = self.distance_matrix.shape[0]
         assigned_indices = np.argmin(self.distance_matrix[:, medoids], axis=1)
         assigned_medoids = [medoids[index] for index in assigned_indices]
         return assigned_medoids
 
     def get_best_medoid_index_at_cluster(self, clusters, cluster_medoid_index):
         cluster_points = np.where(clusters == cluster_medoid_index)[0]
-        if len(cluster_points) == 0:
-            print(f"No points found for cluster medoid index {cluster_medoid_index}")
-            return cluster_medoid_index
         distances_sum = self.distance_matrix[cluster_points][:, cluster_points].sum(axis=1)
         best_medoid = cluster_points[np.argmin(distances_sum)]
         return best_medoid

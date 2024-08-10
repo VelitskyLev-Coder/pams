@@ -1,29 +1,27 @@
 #include "Pam.h"
 
 #include <numeric>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
-#include <set>
 
 /*
 * Build Phase according to the paper
-https://www.cs.umb.edu/cs738/pam1.pdf 
+https://www.cs.umb.edu/cs738/pam1.pdf
 */
 
 std::vector<size_t> PamBuilder::initializeMedoids(size_t k) {
-  if (initializeMedoidResultCache.size() >= k) {
-    return std::vector<size_t>(initializeMedoidResultCache.begin(),
-                               initializeMedoidResultCache.begin() + k);
+  std::vector<size_t>& resultMedoids = initializeMedoidResultCache;
+  std::vector<double>& minDistances = initializeMedoidMinDistanceCache;
+
+  if (resultMedoids.size() >= k) {
+    return std::vector<size_t>(resultMedoids.begin(),
+                               resultMedoids.begin() + k);
   }
 
   size_t numPoints = distanceMatrix.size();
 
-  std::set<size_t> remainingPoints;
-  for (size_t i = 0; i < numPoints; ++i) {
-    remainingPoints.insert(i);
-  }
-
-  if (initializeMedoidResultCache.empty()) {
+  if (resultMedoids.empty()) {
     size_t firstMedoid = 0;
     double minSumDistance = std::numeric_limits<double>::max();
     for (size_t i = 0; i < numPoints; ++i) {
@@ -35,15 +33,23 @@ std::vector<size_t> PamBuilder::initializeMedoids(size_t k) {
       }
     }
 
-    initializeMedoidResultCache.push_back(firstMedoid);
-    remainingPoints.erase(firstMedoid);
-    initializeMedoidMinDistanceCache.resize(numPoints, std::numeric_limits<double>::max());
+    resultMedoids.push_back(firstMedoid);
+    minDistances.resize(numPoints, std::numeric_limits<double>::max());
     for (size_t i = 0; i < numPoints; ++i) {
-      initializeMedoidMinDistanceCache[i] = distanceMatrix[firstMedoid][i];
+      minDistances[i] = distanceMatrix[firstMedoid][i];
     }
   }
 
-  while (initializeMedoidResultCache.size() < k) {
+  std::set<size_t> remainingPoints;  // We use set to keep indexes in order for
+                                     // cache locality
+  for (size_t i = 0; i < numPoints; ++i) {
+    remainingPoints.insert(i);
+  }
+  for (size_t medoid : resultMedoids) {
+    remainingPoints.erase(medoid);
+  }
+
+  while (resultMedoids.size() < k) {
     size_t bestCandidate = 0;
     double maxGain = -1;
 
@@ -51,7 +57,7 @@ std::vector<size_t> PamBuilder::initializeMedoids(size_t k) {
       double gain = 0;
 
       for (size_t j : remainingPoints) {
-        double Dj = initializeMedoidMinDistanceCache[j];
+        double Dj = minDistances[j];
         double Cji = std::max(Dj - distanceMatrix[i][j], 0.0);
         gain += Cji;
       }
@@ -62,23 +68,21 @@ std::vector<size_t> PamBuilder::initializeMedoids(size_t k) {
       }
     }
 
-    initializeMedoidResultCache.push_back(bestCandidate);
+    resultMedoids.push_back(bestCandidate);
     remainingPoints.erase(bestCandidate);
 
     // Update minDistances with the new medoid
     for (size_t i = 0; i < numPoints; ++i) {
-      initializeMedoidMinDistanceCache[i] =
-          std::min(initializeMedoidMinDistanceCache[i], distanceMatrix[bestCandidate][i]);
+      minDistances[i] =
+          std::min(minDistances[i], distanceMatrix[bestCandidate][i]);
     }
   }
 
-  return std::vector<size_t>(initializeMedoidResultCache.begin(),
-                             initializeMedoidResultCache.begin() + k);
+  return std::vector<size_t>(resultMedoids.begin(), resultMedoids.begin() + k);
 }
 
-
 void PamBuilder::assignPointsToMedoids(const std::vector<size_t>& medoids,
-                           std::vector<size_t>& oAssignedPoints) {
+                                       std::vector<size_t>& oAssignedPoints) {
   size_t numPoints = distanceMatrix.size();
   oAssignedPoints.resize(numPoints);
 
@@ -94,18 +98,9 @@ void PamBuilder::assignPointsToMedoids(const std::vector<size_t>& medoids,
   }
 }
 
-double computeTotalCost(const Matrix& distanceMatrix,
-                        const std::vector<size_t>& clusters) {
-  double result = 0;
-  for (int i = 0; i < clusters.size(); i++) {
-    result += distanceMatrix[clusters[i]][i];
-  }
-  return result;
-}
 
 size_t PamBuilder::getbestMedoidIndexAtCluster(
-                                   const std::vector<size_t>& clusters,
-                                   size_t clusterMedoidIndex) {
+    const std::vector<size_t>& clusters, size_t clusterMedoidIndex) {
   size_t resultBestMedoid = clusterMedoidIndex;
   double minDistanceSum = std::numeric_limits<double>::max();
   for (size_t pointIndex = 0; pointIndex < clusters.size(); pointIndex++) {
